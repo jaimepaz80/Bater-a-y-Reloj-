@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Sistema</title>
+    <style>
+        /* CSS: Control de estilos y contraste */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #FFFF00;
+            font-family: 'Arial Black', Impact, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+        #battery {
+            font-size: 35vw;
+            line-height: 0.9;
+            text-shadow: 2px 2px 0px #000;
+        }
+        #time {
+            font-size: 12vw;
+            color: #FFFFFF;
+            margin-top: 2vh;
+        }
+        #date {
+            font-size: 6vw;
+            color: #00FF00;
+            margin-top: 1vh;
+            text-transform: uppercase;
+        }
+        .error {
+            font-size: 5vw;
+            color: #FF0000;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="battery">--%</div>
+    <div id="time">--:--:--</div>
+    <div id="date">--/--/----</div>
+
+    <script>
+        // JS: Lógica del reloj
+        function updateTime() {
+            const now = new Date();
+            
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const dateOpts = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('es-ES', dateOpts);
+            
+            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+            document.getElementById('date').textContent = dateStr;
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // JS: Lógica de lectura de batería
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                function updateBatteryInfo() {
+                    const level = Math.round(battery.level * 100);
+                    document.getElementById('battery').textContent = level + '%';
+                }
+                updateBatteryInfo();
+                battery.addEventListener('levelchange', updateBatteryInfo);
+            });
+        } else {
+            document.getElementById('battery').innerHTML = '<div class="error">API NO SOPORTADA</div>';
+        }
+    </script>
+</body>
+</html>
