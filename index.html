@@ -26,8 +26,13 @@
         }
         #status {
             font-size: 8vw;
-            margin-bottom: 2vh;
+            margin-bottom: 1vh;
             text-transform: uppercase;
+        }
+        #estimate {
+            font-size: 6vw;
+            color: #AAAAAA;
+            margin-bottom: 2vh;
         }
         #time {
             font-size: 12vw;
@@ -50,11 +55,11 @@
 
     <div id="battery">--%</div>
     <div id="status">--</div>
+    <div id="estimate">--</div>
     <div id="time">--:--:--</div>
     <div id="date">--/--/----</div>
 
     <script>
-        // Lógica del Reloj y Fecha
         function updateTime() {
             const now = new Date();
             
@@ -72,34 +77,54 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        // Lógica de Batería y Estado de Carga
         if ('getBattery' in navigator) {
             navigator.getBattery().then(function(battery) {
+                
+                function formatTime(secs) {
+                    if (!isFinite(secs)) return "Calculando...";
+                    if (secs <= 0) return "0h 0m";
+                    const h = Math.floor(secs / 3600);
+                    const m = Math.floor((secs % 3600) / 60);
+                    return `${h}h ${m}m`;
+                }
+
                 function updateBatteryInfo() {
-                    // Porcentaje numérico
                     const level = Math.round(battery.level * 100);
                     document.getElementById('battery').textContent = level + '%';
                     
-                    // Texto y color de estado
                     const statusDiv = document.getElementById('status');
+                    const estimateDiv = document.getElementById('estimate');
+                    
                     if (battery.charging) {
                         statusDiv.textContent = 'CARGANDO';
-                        statusDiv.style.color = '#00FF00'; // Verde
+                        statusDiv.style.color = '#00FF00';
+                        estimateDiv.textContent = `Tiempo al 100%: ${formatTime(battery.chargingTime)}`;
                     } else {
                         statusDiv.textContent = 'DESCARGANDO';
-                        statusDiv.style.color = '#FF9900'; // Ámbar
+                        statusDiv.style.color = '#FF9900';
+                        
+                        const totalSecs = battery.dischargingTime;
+                        if (level > 10 && isFinite(totalSecs)) {
+                            const timeTo10 = (totalSecs / level) * (level - 10);
+                            estimateDiv.textContent = `Tiempo al 10%: ${formatTime(timeTo10)}`;
+                        } else if (level <= 10) {
+                            estimateDiv.textContent = "Batería al 10% o menos";
+                        } else {
+                            estimateDiv.textContent = "Tiempo al 10%: Calculando...";
+                        }
                     }
                 }
                 
-                // Ejecución inicial y listeners
                 updateBatteryInfo();
                 battery.addEventListener('levelchange', updateBatteryInfo);
                 battery.addEventListener('chargingchange', updateBatteryInfo);
+                battery.addEventListener('chargingtimechange', updateBatteryInfo);
+                battery.addEventListener('dischargingtimechange', updateBatteryInfo);
             });
         } else {
-            // Manejo de error para navegadores no compatibles (ej. iOS/Safari)
             document.getElementById('battery').innerHTML = '<div class="error">API NO SOPORTADA</div>';
             document.getElementById('status').style.display = 'none';
+            document.getElementById('estimate').style.display = 'none';
         }
     </script>
 </body>
