@@ -98,7 +98,13 @@
                     if (battery.charging) {
                         statusDiv.textContent = 'CARGANDO';
                         statusDiv.style.color = '#00FF00';
-                        estimateDiv.textContent = `Tiempo al 100%: ${formatTime(battery.chargingTime)}`;
+                        
+                        const chargeTime = battery.chargingTime;
+                        if (isFinite(chargeTime) && chargeTime < 86400) {
+                            estimateDiv.textContent = `Tiempo al 100%: ${formatTime(chargeTime)}`;
+                        } else {
+                            estimateDiv.textContent = "Tiempo al 100%: Calculando/Bloqueado...";
+                        }
                     } else {
                         statusDiv.textContent = 'DESCARGANDO';
                         statusDiv.style.color = '#FF9900';
