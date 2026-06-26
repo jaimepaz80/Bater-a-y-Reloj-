@@ -76,30 +76,33 @@
         if ('getBattery' in navigator) {
             navigator.getBattery().then(function(battery) {
                 function updateBatteryInfo() {
-                    // Porcentaje numérico
                     const level = Math.round(battery.level * 100);
                     document.getElementById('battery').textContent = level + '%';
                     
-                    // Texto y color de estado
                     const statusDiv = document.getElementById('status');
                     if (battery.charging) {
                         statusDiv.textContent = 'CARGANDO';
-                        statusDiv.style.color = '#00FF00'; // Verde
+                        statusDiv.style.color = '#00FF00';
                     } else {
                         statusDiv.textContent = 'DESCARGANDO';
-                        statusDiv.style.color = '#FF9900'; // Ámbar
+                        statusDiv.style.color = '#FF9900';
                     }
                 }
                 
-                // Ejecución inicial y listeners
                 updateBatteryInfo();
                 battery.addEventListener('levelchange', updateBatteryInfo);
                 battery.addEventListener('chargingchange', updateBatteryInfo);
             });
         } else {
-            // Manejo de error para navegadores no compatibles (ej. iOS/Safari)
             document.getElementById('battery').innerHTML = '<div class="error">API NO SOPORTADA</div>';
             document.getElementById('status').style.display = 'none';
+        }
+
+        // Interceptor Offline (Service Worker)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js');
+            });
         }
     </script>
 </body>
